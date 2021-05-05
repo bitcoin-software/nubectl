@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/manifoldco/promptui"
 )
 
 func readKey(keypath string) []byte {
@@ -61,7 +63,7 @@ func createJail(disksize string, key string, name string) {
 	fmt.Println("response Body:", string(body))
 }
 
-func createVM(cores int, ramsize string, disksize string, key string, name string) {
+func createVM(image string, cores int, ramsize string, disksize string, key string, name string) {
 	cloudurl := os.Getenv("CLOUDURL")
 
 	httpposturl := cloudurl + "/api/v1/create/" + name
@@ -72,7 +74,7 @@ func createVM(cores int, ramsize string, disksize string, key string, name strin
 	  "imgsize": "` + disksize + `",
 	  "ram": "` + ramsize + `",
 	  "cpus": "` + strconv.Itoa(cores) + `",
-	  "img": "centos7",
+	  "img": "` + image + `",
 	  "pubkey": "` + key + `"
 	}`)
 
@@ -163,6 +165,75 @@ func destroyResource(name string, keyID string) {
 	fmt.Println("response Body:", string(body))
 }
 
+func createJailDialogue(pubkey string) {
+	prompt := promptui.Select{
+		Label: "Select disk size",
+		Items: []string{"10g", "20g", "40g", "80g", "160g"},
+	}
+
+	_, disksize, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
+
+	createJail(disksize, pubkey, "testJ")
+}
+
+func createVmDialogue(pubkey string) {
+	prompt := promptui.Select{
+		Label: "Select how many CPUs you need",
+		Items: []int{1, 2, 4, 8},
+	}
+
+	_, cpus, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
+
+	prompt = promptui.Select{
+		Label: "Select how much RAM you need",
+		Items: []string{"512m", "2g", "4g", "8g"},
+	}
+
+	_, ram, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
+
+	prompt = promptui.Select{
+		Label: "Select disk size",
+		Items: []string{"20g", "60g", "180g", "300g"},
+	}
+
+	_, disksize, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
+
+	prompt = promptui.Select{
+		Label: "Select VM image",
+		Items: []string{"centos7", "ubuntu20", "freebsd13", "docker"},
+	}
+
+	_, image, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
+
+	fmt.Printf(cpus)
+	createVM(image, 1, ram, disksize, pubkey, "testV")
+}
+
 func main() {
 
 	if len(os.Args) < 2 {
@@ -187,11 +258,19 @@ func main() {
 	command := os.Args[1]
 
 	if command == "create" {
-		createJail("10g", pubkey, "testjail")
+		resourceType := os.Args[2]
+		if resourceType == "vm" {
+			createVmDialogue(pubkey)
+		} else if resourceType == "container" {
+			createJailDialogue(pubkey)
+		} else {
+			fmt.Println("Usage: nubectl create [vm|container]")
+		}
+
 	} else if command == "status" {
-		getStatus("testjail", apitoken)
+		getStatus(os.Args[2], apitoken)
 	} else if command == "destroy" {
-		destroyResource("testjail", apitoken)
+		destroyResource(os.Args[2], apitoken)
 	} else if command == "list" {
 		listCluster(apitoken)
 	}
