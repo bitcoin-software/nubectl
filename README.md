@@ -9,8 +9,8 @@ Download the repo, compile the code for your platform.
 ```bash
 $ git clone https://github.com/bitcoin-software/nubectl
 $ cd nubectl
-$ go build main.go
-$ mv main /usr/local/bin/nubectl
+$ ./build.sh
+$ mv nubectl /usr/local/bin/nubectl
 
 ```
 
