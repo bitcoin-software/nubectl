@@ -10,9 +10,17 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"flag"
 
 	"github.com/manifoldco/promptui"
 )
+
+var (
+	cloudkey		= flag.String("cloudkey", "", "Path to cloudkey")
+	cloudurl		= flag.String("cloudurl", "", "Cloud URL")
+)
+
+var cloudUrl string
 
 func readKey(keypath string) []byte {
 	mykey, err := ioutil.ReadFile(keypath) // just pass the file name
@@ -34,15 +42,13 @@ func getToken(keypath string) string {
 
 func createJail(disksize string, key string, name string) {
 
-	cloudurl := os.Getenv("CLOUDURL")
-
-	httpposturl := cloudurl + "/api/v1/create/" + name
+	httpposturl := cloudUrl + "/api/v1/create/" + name
 	//fmt.Println("HTTP JSON POST URL:", httpposturl)
 
 	var jsonData = []byte(`{
 		"type": "jail",
-  		"imgsize": "` + disksize + `",
-  		"pubkey": "` + key + `"
+		"imgsize": "` + disksize + `",
+		"pubkey": "` + key + `"
 	}`)
 
 	fmt.Println(string(jsonData))
@@ -64,9 +70,9 @@ func createJail(disksize string, key string, name string) {
 }
 
 func createVM(image string, cores int, ramsize string, disksize string, key string, name string) {
-	cloudurl := os.Getenv("CLOUDURL")
+	cloudUrl := os.Getenv("CLOUDURL")
 
-	httpposturl := cloudurl + "/api/v1/create/" + name
+	httpposturl := cloudUrl + "/api/v1/create/" + name
 	fmt.Println("HTTP JSON POST URL:", httpposturl)
 
 	var jsonData = []byte(`{
@@ -97,9 +103,9 @@ func createVM(image string, cores int, ramsize string, disksize string, key stri
 }
 
 func getStatus(name string, keyID string) {
-	cloudurl := os.Getenv("CLOUDURL")
+	cloudUrl := os.Getenv("CLOUDURL")
 
-	statusurl := cloudurl + "/api/v1/status/" + name
+	statusurl := cloudUrl + "/api/v1/status/" + name
 	//fmt.Println("HTTP JSON POST URL:", statusurl)
 
 	request, error := http.NewRequest("GET", statusurl, nil)
@@ -120,8 +126,8 @@ func getStatus(name string, keyID string) {
 }
 
 func listCluster(keyID string) {
-	cloudurl := os.Getenv("CLOUDURL")
-	statusurl := cloudurl + "/api/v1/cluster"
+	cloudUrl := os.Getenv("CLOUDURL")
+	statusurl := cloudUrl + "/api/v1/cluster"
 	//fmt.Println("HTTP JSON POST URL:", statusurl)
 
 	request, error := http.NewRequest("GET", statusurl, nil)
@@ -143,9 +149,9 @@ func listCluster(keyID string) {
 
 func destroyResource(name string, keyID string) {
 
-	cloudurl := os.Getenv("CLOUDURL")
+	cloudUrl := os.Getenv("CLOUDURL")
 
-	destroyurl := cloudurl + "/api/v1/destroy/" + name
+	destroyurl := cloudUrl + "/api/v1/destroy/" + name
 	//fmt.Println("HTTP JSON POST URL:", destroyurl)
 
 	request, error := http.NewRequest("GET", destroyurl, nil)
@@ -234,15 +240,53 @@ func createVmDialogue(pubkey string) {
 	createVM(image, 1, ram, disksize, pubkey, "testV")
 }
 
+// return true of dir/file exist
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
 func main() {
+
+	var keypath string
 
 	if len(os.Args) < 2 {
 		fmt.Println("no arguments supplied! run 'nubectl help' to get list of args")
 		os.Exit(1)
 	}
 
-	//fmt.Println("hello world")
-	keypath := os.Getenv("CLOUDKEY")
+	flag.Parse()
+
+	// keypath: get from args
+	if len(*cloudkey) > 1 {
+		keypath = *cloudkey
+		//fmt.Println("hello world")
+	} else {
+		// keyppath: get from env(1)
+		keypath = os.Getenv("CLOUDKEY")
+	}
+
+	if !fileExists(keypath) {
+		fmt.Printf("no such CLOUDKEY env or --cloudkey: %s\n",keypath)
+		os.Exit(1)
+	}
+
+	// cloudUrl: get from args
+	if len(*cloudurl) > 1 {
+		cloudUrl = *cloudurl
+		//fmt.Println("hello world")
+	} else {
+		// keyppath: get from env(1)
+		cloudUrl = os.Getenv("CLOUDURL")
+	}
+
+	if len(cloudUrl) < 2 {
+		fmt.Printf("no such CLOUDURL env or --cloudurl\n")
+		os.Exit(1)
+	}
 
 	apitoken := getToken(keypath)
 	//fmt.Println(apitoken)
