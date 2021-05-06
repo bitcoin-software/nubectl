@@ -20,10 +20,19 @@ $ mv main /usr/local/bin/nubectl
 
 ### with on-premise [CBSD](https://github.com/cbsd/cbsd) cluster
 
+via env(1):
+
 ```bash
 $ export CLOUDURL="https://your-cbsd-api.endpoint.com"
 $ export CLOUDKEY="/path/to/your/ssh/key.pub"
 $ nubectl help
+```
+
+via args:
+
+```bash
+$ nubectl --cloudurl https://your-cbsd-api.endpoint.com --cloudkey /path/to/your/ssh/key.pub
+$ nubectl -cloudurl=https://your-cbsd-api.endpoint.com -cloudkey=/path/to/your/ssh/key.pub
 ```
 
 ### with [bitclouds](https://bitclouds.sh)
