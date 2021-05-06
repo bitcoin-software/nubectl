@@ -2,3 +2,5 @@ misc
 .idea
 main
 go.*
+nubectl
+src/*
