@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/md5"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -10,14 +11,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"flag"
 
 	"github.com/manifoldco/promptui"
 )
 
 var (
-	cloudkey		= flag.String("cloudkey", "", "Path to cloudkey")
-	cloudurl		= flag.String("cloudurl", "", "Cloud URL")
+	cloudkey = flag.String("cloudkey", "", "Path to cloudkey")
+	cloudurl = flag.String("cloudurl", "", "Cloud URL")
 )
 
 var cloudUrl string
@@ -70,7 +70,6 @@ func createJail(disksize string, key string, name string) {
 }
 
 func createVM(image string, cores int, ramsize string, disksize string, key string, name string) {
-	cloudUrl := os.Getenv("CLOUDURL")
 
 	httpposturl := cloudUrl + "/api/v1/create/" + name
 	fmt.Println("HTTP JSON POST URL:", httpposturl)
@@ -103,7 +102,6 @@ func createVM(image string, cores int, ramsize string, disksize string, key stri
 }
 
 func getStatus(name string, keyID string) {
-	cloudUrl := os.Getenv("CLOUDURL")
 
 	statusurl := cloudUrl + "/api/v1/status/" + name
 	//fmt.Println("HTTP JSON POST URL:", statusurl)
@@ -126,7 +124,6 @@ func getStatus(name string, keyID string) {
 }
 
 func listCluster(keyID string) {
-	cloudUrl := os.Getenv("CLOUDURL")
 	statusurl := cloudUrl + "/api/v1/cluster"
 	//fmt.Println("HTTP JSON POST URL:", statusurl)
 
@@ -149,8 +146,6 @@ func listCluster(keyID string) {
 
 func destroyResource(name string, keyID string) {
 
-	cloudUrl := os.Getenv("CLOUDURL")
-
 	destroyurl := cloudUrl + "/api/v1/destroy/" + name
 	//fmt.Println("HTTP JSON POST URL:", destroyurl)
 
@@ -171,7 +166,7 @@ func destroyResource(name string, keyID string) {
 	fmt.Println("response Body:", string(body))
 }
 
-func createJailDialogue(pubkey string) {
+func createJailDialogue(pubkey string, name string) {
 	prompt := promptui.Select{
 		Label: "Select disk size",
 		Items: []string{"10g", "20g", "40g", "80g", "160g"},
@@ -184,10 +179,10 @@ func createJailDialogue(pubkey string) {
 		return
 	}
 
-	createJail(disksize, pubkey, "testJ")
+	createJail(disksize, pubkey, name)
 }
 
-func createVmDialogue(pubkey string) {
+func createVmDialogue(pubkey string, name string) {
 	prompt := promptui.Select{
 		Label: "Select how many CPUs you need",
 		Items: []int{1, 2, 4, 8},
@@ -236,8 +231,8 @@ func createVmDialogue(pubkey string) {
 		return
 	}
 
-	fmt.Printf(cpus)
-	createVM(image, 1, ram, disksize, pubkey, "testV")
+	cpucount, _ := strconv.Atoi(cpus)
+	createVM(image, cpucount, ram, disksize, pubkey, name)
 }
 
 // return true of dir/file exist
@@ -270,14 +265,13 @@ func main() {
 	}
 
 	if !fileExists(keypath) {
-		fmt.Printf("no such CLOUDKEY env or --cloudkey: %s\n",keypath)
+		fmt.Printf("no such CLOUDKEY env or --cloudkey: %s\n", keypath)
 		os.Exit(1)
 	}
 
 	// cloudUrl: get from args
 	if len(*cloudurl) > 1 {
 		cloudUrl = *cloudurl
-		//fmt.Println("hello world")
 	} else {
 		// keyppath: get from env(1)
 		cloudUrl = os.Getenv("CLOUDURL")
@@ -294,19 +288,16 @@ func main() {
 	//fmt.Println(string(readKey(keypath)))
 
 	pubkey := string(readKey(keypath))
-	/*
-		createVM(1, "2g", "10g", pubkey, "testvm")
-		time.Sleep(45 * time.Second)
-	*/
+
 	time.Sleep(1 * time.Second)
 	command := os.Args[1]
 
 	if command == "create" {
 		resourceType := os.Args[2]
 		if resourceType == "vm" {
-			createVmDialogue(pubkey)
+			createVmDialogue(pubkey, os.Args[3])
 		} else if resourceType == "container" {
-			createJailDialogue(pubkey)
+			createJailDialogue(pubkey, os.Args[3])
 		} else {
 			fmt.Println("Usage: nubectl create [vm|container]")
 		}
