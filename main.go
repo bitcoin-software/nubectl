@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	cloudkey		= flag.String("cloudkey", "", "Path to cloudkey")
-	cloudurl		= flag.String("cloudurl", "", "Cloud URL")
+	cloudkey	= flag.String("cloudkey", "", "Path to cloudkey")
+	cloudurl	= flag.String("cloudurl", "", "Cloud URL")
 )
 
 var cloudUrl string
@@ -70,7 +70,6 @@ func createJail(disksize string, key string, name string) {
 }
 
 func createVM(image string, cores int, ramsize string, disksize string, key string, name string) {
-	cloudUrl := os.Getenv("CLOUDURL")
 
 	httpposturl := cloudUrl + "/api/v1/create/" + name
 	fmt.Println("HTTP JSON POST URL:", httpposturl)
@@ -102,10 +101,18 @@ func createVM(image string, cores int, ramsize string, disksize string, key stri
 	fmt.Println("response Body:", string(body))
 }
 
+// show environment (when name is set) or cluster status
 func getStatus(name string, keyID string) {
-	cloudUrl := os.Getenv("CLOUDURL")
 
-	statusurl := cloudUrl + "/api/v1/status/" + name
+	var statusurl string
+
+	if len(name) > 1 {
+		//get status for 'name' environment
+		statusurl = cloudUrl + "/api/v1/status/" + name
+	} else {
+		// when 'name' is absent then get cluster status
+		statusurl = cloudUrl + "/api/v1/cluster"
+	}
 	//fmt.Println("HTTP JSON POST URL:", statusurl)
 
 	request, error := http.NewRequest("GET", statusurl, nil)
@@ -126,7 +133,7 @@ func getStatus(name string, keyID string) {
 }
 
 func listCluster(keyID string) {
-	cloudUrl := os.Getenv("CLOUDURL")
+
 	statusurl := cloudUrl + "/api/v1/cluster"
 	//fmt.Println("HTTP JSON POST URL:", statusurl)
 
@@ -148,8 +155,6 @@ func listCluster(keyID string) {
 }
 
 func destroyResource(name string, keyID string) {
-
-	cloudUrl := os.Getenv("CLOUDURL")
 
 	destroyurl := cloudUrl + "/api/v1/destroy/" + name
 	//fmt.Println("HTTP JSON POST URL:", destroyurl)
@@ -254,7 +259,7 @@ func main() {
 	var keypath string
 
 	if len(os.Args) < 2 {
-		fmt.Println("no arguments supplied! run 'nubectl help' to get list of args")
+		fmt.Println("no arguments supplied! run 'nubectl --help' to get list of args")
 		os.Exit(1)
 	}
 
@@ -311,8 +316,14 @@ func main() {
 			fmt.Println("Usage: nubectl create [vm|container]")
 		}
 
+
 	} else if command == "status" {
-		getStatus(os.Args[2], apitoken)
+		if len(os.Args) == 3 {
+			getStatus(os.Args[2], apitoken)
+		} else {
+			// empty or wrong arg num: show cluster status only
+			getStatus("", apitoken)
+		}
 	} else if command == "destroy" {
 		destroyResource(os.Args[2], apitoken)
 	} else if command == "list" {
