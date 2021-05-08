@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	cloudkey = flag.String("cloudkey", "", "Path to cloudkey")
-	cloudurl = flag.String("cloudurl", "", "Cloud URL")
+	cloudkey = flag.String("cloudkey", "", "Path to cloudkey ( or CLOUDKEY environment )")
+	cloudurl = flag.String("cloudurl", "", "Cloud URL ( or CLOUDURL environment )")
 )
 
 var cloudUrl string
@@ -101,9 +101,19 @@ func createVM(image string, cores int, ramsize string, disksize string, key stri
 	fmt.Println("response Body:", string(body))
 }
 
+// show environment (when name is set) or cluster status
 func getStatus(name string, keyID string) {
 
-	statusurl := cloudUrl + "/api/v1/status/" + name
+	var statusurl string
+
+	if len(name) > 1 {
+		//get status for 'name' environment
+		statusurl = cloudUrl + "/api/v1/status/" + name
+	} else {
+		// when 'name' is absent then get cluster status
+		statusurl = cloudUrl + "/api/v1/cluster"
+	}
+
 	//fmt.Println("HTTP JSON POST URL:", statusurl)
 
 	request, error := http.NewRequest("GET", statusurl, nil)
@@ -249,7 +259,7 @@ func main() {
 	var keypath string
 
 	if len(os.Args) < 2 {
-		fmt.Println("no arguments supplied! run 'nubectl help' to get list of args")
+		fmt.Println("no arguments supplied! run 'nubectl --help' to get list of args")
 		os.Exit(1)
 	}
 
@@ -303,7 +313,12 @@ func main() {
 		}
 
 	} else if command == "status" {
-		getStatus(os.Args[2], apitoken)
+		if len(os.Args) == 3 {
+			getStatus(os.Args[2], apitoken)
+		} else {
+			// empty or wrong arg num: show cluster status only
+			getStatus("", apitoken)
+		}
 	} else if command == "destroy" {
 		destroyResource(os.Args[2], apitoken)
 	} else if command == "list" {
