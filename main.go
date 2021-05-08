@@ -127,10 +127,11 @@ func getStatus(name string, keyID string) {
 	}
 	defer response.Body.Close()
 
-	fmt.Println("response Status:", response.Status)
+	fmt.Fprintln(os.Stderr,"response Status:", response.Status)
 	//fmt.Println("response Headers:", response.Header)
 	body, _ := ioutil.ReadAll(response.Body)
-	fmt.Println("response Body:", string(body))
+	fmt.Fprintln(os.Stderr,"response Body:")
+	fmt.Println(string(body))
 }
 
 func listCluster(keyID string) {
