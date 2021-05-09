@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -25,6 +26,7 @@ var (
 var cloudUrl string
 
 type Env struct {
+	Version   string
 	Container []Container
 	Vm        []Vm
 }
@@ -36,6 +38,7 @@ type Container struct {
 
 type Vm struct {
 	Name     string
+	Cpu      string
 	Ram      string
 	Disksize string
 	Image    string
@@ -274,6 +277,61 @@ func fileExists(filename string) bool {
 	return true
 }
 
+func readCloudConfig() Env {
+	environment := Env{}
+
+	yamlFile, err := ioutil.ReadFile("cloud.yaml")
+	if err != nil {
+		log.Printf("yamlFile.Get err   #%v ", err)
+	}
+	err = yaml.Unmarshal(yamlFile, &environment)
+
+	fmt.Printf("%+v\n", environment)
+	return environment
+}
+
+func applyConfig(pubkey string) {
+	envir := readCloudConfig()
+
+	for nr, vm := range envir.Vm {
+		fmt.Println(nr)
+		fmt.Println("creating " + vm.Name)
+		cpucount, _ := strconv.Atoi(vm.Cpu)
+		createVM(vm.Image, cpucount, vm.Ram, vm.Disksize, pubkey, vm.Name)
+	}
+
+	for nr, jail := range envir.Container {
+		fmt.Println(nr)
+		fmt.Println("creating " + jail.Name)
+
+		v := reflect.ValueOf(jail)
+		typeOfS := v.Type()
+
+		for i := 0; i < v.NumField(); i++ {
+			fmt.Printf("Field: %s\tValue: %v\n", typeOfS.Field(i).Name, v.Field(i).Interface())
+		}
+
+		createJail(jail.Disksize, pubkey, jail.Name)
+	}
+}
+
+func divertConfig(token string) {
+	envir := readCloudConfig()
+
+	for nr, vm := range envir.Vm {
+		fmt.Println(nr)
+		fmt.Println("deleting " + vm.Name)
+		destroyResource(vm.Name, token)
+	}
+
+	for nr, jail := range envir.Container {
+		fmt.Println(nr)
+		fmt.Println("deleting " + jail.Name)
+		destroyResource(jail.Name, token)
+	}
+
+}
+
 func main() {
 
 	var keypath string
@@ -282,16 +340,6 @@ func main() {
 		fmt.Println("no arguments supplied! run 'nubectl --help' to get list of args")
 		os.Exit(1)
 	}
-
-	y := Env{}
-
-	yamlFile, err := ioutil.ReadFile("cloud.yaml")
-	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
-	}
-	err = yaml.Unmarshal(yamlFile, &y)
-
-	fmt.Printf("%+v\n", y)
 
 	flag.Parse()
 
@@ -350,6 +398,10 @@ func main() {
 		destroyResource(os.Args[2], apitoken)
 	} else if command == "list" {
 		listCluster(apitoken)
+	} else if command == "apply" {
+		applyConfig(pubkey)
+	} else if command == "divert" {
+		divertConfig(apitoken)
 	}
 
 	//fmt.Println(pubkey)
