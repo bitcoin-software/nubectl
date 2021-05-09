@@ -13,9 +13,11 @@ import (
 var (
 	cloudkey = flag.String("cloudkey", "", "Path to cloudkey ( or CLOUDKEY environment )")
 	cloudurl = flag.String("cloudurl", "", "Cloud URL ( or CLOUDURL environment )")
+	sshkey   = flag.String("sshkey", "~/.ssh/id_ed25519", "SSH keypath for ssh")
 )
 
 var cloudUrl string
+var sshKey string
 
 func createJail(disksize string, key string, name string) {
 

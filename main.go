@@ -130,6 +130,16 @@ func main() {
 		applyConfig(pubkey)
 	} else if command == "divert" {
 		divertConfig(apitoken)
+	} else if command == "ssh" {
+		if len(cloudUrl) < 2 {
+			fmt.Printf("no such SSHKEY env or --sshkey\n")
+			os.Exit(1)
+		}
+		if len(os.Args) == 3 {
+			sshResource(os.Args[2], apitoken)
+		} else {
+			sshSelectResource(apitoken)
+		}
 	}
 
 	//fmt.Println(pubkey)
