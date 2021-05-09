@@ -25,7 +25,7 @@ via env(1):
 ```bash
 $ export CLOUDURL="https://your-cbsd-api.endpoint.com"
 $ export CLOUDKEY="/path/to/your/ssh/key.pub"
-$ nubectl help
+$ nubectl --help
 ```
 
 via args:
@@ -38,8 +38,60 @@ $ nubectl -cloudurl=https://your-cbsd-api.endpoint.com -cloudkey=/path/to/your/s
 ### with [bitclouds](https://bitclouds.sh)
 ```bash
 $ export CLOUDKEY="/path/to/your/ssh/key.pub"
-$ nubectl help
+$ nubectl --help
 ```
+
+### Infrastructure as a Code
+
+Configure CLI
+
+```bash
+$ export CLOUDKEY="/path/to/your/ssh/key.pub"
+$ nubectl --help
+```
+
+Create `config.yaml` file in `$PWD`
+
+```yaml
+version: 0.0.1
+
+vm:
+  - name: testvm
+    cpu: 1
+    ram: 2g
+    disksize: 10g
+    image: centos7
+
+  - name: testvm2
+    cpu: 1
+    ram: 2g
+    disksize: 10g
+    image: centos7
+
+container:
+  - name: testjail
+    disksize: 10g
+
+  - name: testjail2
+    disksize: 10g
+
+  - name: testjail3
+    disksize: 10g
+```
+
+Apply configuration
+
+```bash
+$ export CLOUDKEY="/path/to/your/ssh/key.pub"
+$ nubectl apply
+```
+
+Divert configuration
+
+```bash
+$ nubectl divert
+```
+
 
 ## WIP
 This project is under heavy development. Anything can be changed rapidly for no reason.
