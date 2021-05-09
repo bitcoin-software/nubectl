@@ -52,7 +52,7 @@ $ export CLOUDKEY="/path/to/your/ssh/key.pub"
 Create `config.yaml` file in `$PWD`
 
 ```yaml
-version: 0.0.1
+version: alfa
 
 vm:
   - name: testvm
