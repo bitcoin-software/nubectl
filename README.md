@@ -47,7 +47,6 @@ Configure CLI
 
 ```bash
 $ export CLOUDKEY="/path/to/your/ssh/key.pub"
-$ nubectl --help
 ```
 
 Create `config.yaml` file in `$PWD`
@@ -82,7 +81,6 @@ container:
 Apply configuration
 
 ```bash
-$ export CLOUDKEY="/path/to/your/ssh/key.pub"
 $ nubectl apply
 ```
 
