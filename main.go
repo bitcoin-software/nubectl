@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/manifoldco/promptui"
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -21,6 +23,23 @@ var (
 )
 
 var cloudUrl string
+
+type Env struct {
+	Container []Container
+	Vm        []Vm
+}
+
+type Container struct {
+	Name     string
+	Disksize string
+}
+
+type Vm struct {
+	Name     string
+	Ram      string
+	Disksize string
+	Image    string
+}
 
 func readKey(keypath string) []byte {
 	mykey, err := ioutil.ReadFile(keypath) // just pass the file name
@@ -127,10 +146,10 @@ func getStatus(name string, keyID string) {
 	}
 	defer response.Body.Close()
 
-	fmt.Fprintln(os.Stderr,"response Status:", response.Status)
+	fmt.Fprintln(os.Stderr, "response Status:", response.Status)
 	//fmt.Println("response Headers:", response.Header)
 	body, _ := ioutil.ReadAll(response.Body)
-	fmt.Fprintln(os.Stderr,"response Body:")
+	fmt.Fprintln(os.Stderr, "response Body:")
 	fmt.Println(string(body))
 }
 
@@ -264,6 +283,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	y := Env{}
+
+	yamlFile, err := ioutil.ReadFile("cloud.yaml")
+	if err != nil {
+		log.Printf("yamlFile.Get err   #%v ", err)
+	}
+	err = yaml.Unmarshal(yamlFile, &y)
+
+	fmt.Printf("%+v\n", y)
+
 	flag.Parse()
 
 	// keypath: get from args
@@ -294,9 +323,6 @@ func main() {
 	}
 
 	apitoken := getToken(keypath)
-	//fmt.Println(apitoken)
-	//fmt.Println(`test ` + apitoken )
-	//fmt.Println(string(readKey(keypath)))
 
 	pubkey := string(readKey(keypath))
 

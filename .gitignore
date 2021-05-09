@@ -4,3 +4,4 @@ main
 go.*
 nubectl
 src/*
+cloud.yaml
