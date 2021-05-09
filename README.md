@@ -49,7 +49,7 @@ Configure CLI
 $ export CLOUDKEY="/path/to/your/ssh/key.pub"
 ```
 
-Create `config.yaml` file in `$PWD`
+Create `config.yaml` file in `$PWD`. Refer to [example cloud config](dist.cloud.yaml)
 
 ```yaml
 version: alfa
@@ -61,22 +61,12 @@ vm:
     disksize: 10g
     image: centos7
 
-  - name: core
-    cpu: 1
-    ram: 2g
-    disksize: 10g
-    image: docker
-
 container:
-  - name: webserver
-    type: nginx
-    disksize: 10g
-
-  - name: static
+  - name: balancer
     type: jail
     disksize: 10g
 
-  - name: sftpshare
+  - name: fileshare
     type: jail
     disksize: 15g
 ```

@@ -1,0 +1,29 @@
+version: alfa
+
+vm:
+  - name: nodejsapp
+    cpu: 1
+    ram: 2g
+    disksize: 10g
+    image: centos7
+
+#   application-specific cloud images to be added
+#  - name: core
+#    cpu: 1
+#    ram: 2g
+#    disksize: 10g
+#    image: docker
+
+container:
+#   multiple container types to be added
+#  - name: webserver
+#    type: nginx
+#    disksize: 10g
+
+  - name: balancer
+    type: jail
+    disksize: 10g
+
+  - name: fileshare
+    type: jail
+    disksize: 15g
