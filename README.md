@@ -55,27 +55,30 @@ Create `config.yaml` file in `$PWD`
 version: alfa
 
 vm:
-  - name: testvm
+  - name: nodejsapp
     cpu: 1
     ram: 2g
     disksize: 10g
     image: centos7
 
-  - name: testvm2
+  - name: core
     cpu: 1
     ram: 2g
     disksize: 10g
-    image: centos7
+    image: docker
 
 container:
-  - name: testjail
+  - name: webserver
+    type: nginx
     disksize: 10g
 
-  - name: testjail2
+  - name: static
+    type: jail
     disksize: 10g
 
-  - name: testjail3
-    disksize: 10g
+  - name: sftpshare
+    type: jail
+    disksize: 15g
 ```
 
 Apply configuration
