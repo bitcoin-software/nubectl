@@ -93,6 +93,14 @@ func main() {
 		cloudUrl = os.Getenv("CLOUDURL")
 	}
 
+	// sshKey: get from args
+	if len(*sshkey) > 1 {
+		sshKey = *sshkey
+	} else {
+		// sshKey: get from env(1)
+		sshKey = os.Getenv("SSHKEY")
+	}
+
 	if len(cloudUrl) < 2 {
 		fmt.Printf("no such CLOUDURL env or --cloudurl\n")
 		os.Exit(1)
@@ -130,6 +138,16 @@ func main() {
 		applyConfig(pubkey)
 	} else if command == "divert" {
 		divertConfig(apitoken)
+	} else if command == "ssh" {
+		if len(cloudUrl) < 2 {
+			fmt.Printf("no such SSHKEY env or --sshkey\n")
+			os.Exit(1)
+		}
+		if len(os.Args) == 3 {
+			sshResource(os.Args[2], apitoken)
+		} else {
+			sshSelectResource(apitoken)
+		}
 	}
 
 	//fmt.Println(pubkey)
