@@ -93,6 +93,14 @@ func main() {
 		cloudUrl = os.Getenv("CLOUDURL")
 	}
 
+	// sshKey: get from args
+	if len(*sshkey) > 1 {
+		sshKey = *sshkey
+	} else {
+		// sshKey: get from env(1)
+		sshKey = os.Getenv("SSHKEY")
+	}
+
 	if len(cloudUrl) < 2 {
 		fmt.Printf("no such CLOUDURL env or --cloudurl\n")
 		os.Exit(1)
