@@ -14,6 +14,11 @@ $ mv nubectl /usr/local/bin/nubectl
 
 ```
 
+Alternatively, to install to $GOPATH:
+```bash
+$ go get github.com/bitcoin-software/nubectl
+```
+
 ## Usage
 
 **nubectl** can be used with any CBSD-based platform, self-hosted, cloud-hosted or both
