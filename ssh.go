@@ -1,19 +1,36 @@
-// Mock ssh file until golang-based ssh terminal work is stabilized.
+//
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
 	"encoding/json"
-	"net/http"
+	"fmt"
 	"io"
-	"strings"
-	"syscall"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"os/user"
 	"path/filepath"
+	"strings"
+	"syscall"
+
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/terminal"
 )
+
+func PublicKeyFile(file string) (ssh.AuthMethod, error) {
+	buffer, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := ssh.ParsePrivateKey(buffer)
+	if err != nil {
+		return nil, err
+	}
+	return ssh.PublicKeys(key), nil
+}
 
 // Golang has no built-in realpath(1) (e.g. for tilde expansion)
 func expand(path string) (string, error) {
@@ -30,21 +47,110 @@ func expand(path string) (string, error) {
 
 // pass SSH args to external ssh binary
 func doSSH(sshKeyPath string, username string, hostname string, port int) {
-	sshString := fmt.Sprintf("ssh -i %s %s@%s -p%d", sshKeyPath, username, hostname, port)
-	fmt.Fprintln(os.Stderr,"[debug] using sshkey: ", sshKey)
-	fmt.Fprintln(os.Stderr,"[debug] ssh str:", sshString)
+	var sshExternal bool
+	sshExternal = true
 
-	sshArgs := strings.Fields(sshString)
+	if sshExternal {
+		sshString := fmt.Sprintf("ssh -i %s %s@%s -p%d", sshKeyPath, username, hostname, port)
+		fmt.Fprintln(os.Stderr, "[debug] using sshkey: ", sshKey)
+		fmt.Fprintln(os.Stderr, "[debug] ssh str:", sshString)
 
-	//syscall.Exec req for full/realpath to binaries
-	binary, lookErr := exec.LookPath("ssh")
-	if lookErr != nil {
-		panic(lookErr)
+		sshArgs := strings.Fields(sshString)
+
+		//syscall.Exec req for full/realpath to binaries
+		binary, lookErr := exec.LookPath("ssh")
+		if lookErr != nil {
+			panic(lookErr)
+		}
+
+		syscall.Exec(binary, sshArgs, os.Environ())
+	} else {
+		server := fmt.Sprintf("%s:%d", hostname, port)
+
+		publicKey, err := PublicKeyFile(sshKeyPath)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+
+		// for Password method method:
+		// ssh.Password(pass),
+		// todo: pass-protected key?
+		//   ssh: this private key is passphrase protected
+		config := &ssh.ClientConfig{
+			User: username,
+			Auth: []ssh.AuthMethod{
+				publicKey,
+			},
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		}
+
+		client, err := ssh.Dial("tcp", server, config)
+		if err != nil {
+			panic("Failed to dial: " + err.Error())
+		}
+		defer client.Close()
+
+		// Each ClientConn can support multiple interactive sessions,
+		// represented by a Session.
+		session, err := client.NewSession()
+		if err != nil {
+			panic("Failed to create session: " + err.Error())
+		}
+		defer session.Close()
+
+		fd := int(os.Stdin.Fd())
+		state, err := terminal.MakeRaw(fd)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer terminal.Restore(fd, state)
+
+		w, h, err := terminal.GetSize(fd)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		modes := ssh.TerminalModes{
+			ssh.ECHO:          1,
+			ssh.TTY_OP_ISPEED: 14400,
+			ssh.TTY_OP_OSPEED: 14400,
+		}
+
+		err = session.RequestPty("xterm", h, w, modes)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		session.Stdout = os.Stdout
+		session.Stderr = os.Stderr
+		session.Stdin = os.Stdin
+
+		err = session.Shell()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		signal_chan := make(chan os.Signal, 1)
+		signal.Notify(signal_chan, syscall.SIGWINCH)
+		go func() {
+			for {
+				s := <-signal_chan
+				switch s {
+				case syscall.SIGWINCH:
+					fd := int(os.Stdout.Fd())
+					w, h, _ = terminal.GetSize(fd)
+					session.WindowChange(h, w)
+				}
+			}
+		}()
+
+		err = session.Wait()
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
-
-	syscall.Exec(binary, sshArgs, os.Environ())
 }
-
 
 func sshResource(name string, keyID string) {
 
@@ -77,12 +183,9 @@ func sshResource(name string, keyID string) {
 		if err := decoder.Decode(&m); err == io.EOF {
 			break
 		} else if err != nil {
-			fmt.Fprintln(os.Stderr,"fatal:")
+			fmt.Fprintln(os.Stderr, "fatal:")
 			//log.Fatal(err)
 		}
-//		fmt.Fprintln(os.Stderr,"res:", m)
-
-//		md, ok := m.(map[string]interface{})
 		md, _ := m.(map[string]interface{})
 
 		value, exists := md["instanceid"]
@@ -101,7 +204,7 @@ func sshResource(name string, keyID string) {
 				ssh_port_int, _ := ssh_port.(float64)
 				var port int = int(ssh_port_int)
 
-				fmt.Printf("%s@%s -p %d\n", ssh_user,ssh_host, port)
+				fmt.Printf("%s@%s -p %d\n", ssh_user, ssh_host, port)
 				doSSH(sshKeyPath, username, hostname, port)
 			}
 		}
