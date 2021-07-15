@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	//not for win?
 	"os/signal"
 	"os/user"
 	"path/filepath"
@@ -132,11 +133,15 @@ func doSSH(sshKeyPath string, username string, hostname string, port int) {
 		}
 
 		signal_chan := make(chan os.Signal, 1)
+
+		//not for win?
 		signal.Notify(signal_chan, syscall.SIGWINCH)
+
 		go func() {
 			for {
 				s := <-signal_chan
 				switch s {
+				//not for win
 				case syscall.SIGWINCH:
 					fd := int(os.Stdout.Fd())
 					w, h, _ = terminal.GetSize(fd)

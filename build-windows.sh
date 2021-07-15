@@ -6,6 +6,7 @@ workdir=$( realpath ${progdir} )	# realpath dir
 cd ${workdir}
 
 [ -r ${workdir}/nubectl ] && rm -f ${workdir}/nubectl
+[ -d ${workdir}/src ] && rm -rf ${workdir}/src
 
 # Check go install
 if [ -z "$( which go )" ]; then
@@ -21,9 +22,16 @@ if [ -z "${GOVERS}" ]; then
 fi
 
 export GOPATH="${workdir}"
-export GOBIN="${workdir}"
+#export GOPATH="/tmp/nube"
+# go get: cannot install cross-compiled binaries when GOBIN is set
+#export GOBIN="/tmp/nube"
 export GO111MODULE=off
 
 set -e
-go get
-go build -ldflags "${LDFLAGS} -extldflags '-static'" -o "${workdir}/nubectl"
+export GOOS=windows
+export GOARCH=amd64
+export CGO_ENABLED=0
+go get || true
+# go get: no install location for directory /usr/home/olevole/nubectl outside GOPATH ??
+#GOBIN=/tmp go build -ldflags "${LDFLAGS} -extldflags '-static'" -o "${workdir}/nubectl-windows" --no-clean
+go build -ldflags "${LDFLAGS} -extldflags '-static'" -o "${workdir}/nubectl-windows"
