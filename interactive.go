@@ -61,7 +61,7 @@ func createVmDialogue(pubkey string, name string) {
 
 	prompt = promptui.Select{
 		Label: "Select VM image",
-		Items: []string{"centos7", "ubuntu20", "freebsd13", "docker"},
+		Items: []string{"centos7", "centos8", "rocky8", "ubuntu", "debian", "freebsd_ufs", "freebsd_zfs", "openbsd", "netbsd"},
 	}
 
 	_, image, err := prompt.Run()
