@@ -10,7 +10,7 @@ Download the repo, compile the code for your platform.
 $ git clone https://github.com/bitcoin-software/nubectl
 $ cd nubectl
 $ ./build.sh
-$ mv nubectl /usr/local/bin/nubectl
+$ mv nubectl/nubectl /usr/local/bin/nubectl
 
 ```
 
