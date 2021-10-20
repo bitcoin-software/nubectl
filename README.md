@@ -16,7 +16,7 @@ $ mv nubectl/nubectl /usr/local/bin/nubectl
 
 Alternatively, to install to $GOPATH:
 ```bash
-$ go get github.com/bitcoin-software/nubectl
+$ go install github.com/bitcoin-software/nubectl@latest
 ```
 
 ## Usage
