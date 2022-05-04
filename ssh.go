@@ -53,7 +53,7 @@ func doSSH(sshKeyPath string, username string, hostname string, port int) {
 
 	if sshExternal {
 		sshString := fmt.Sprintf("ssh -i %s %s@%s -p%d", sshKeyPath, username, hostname, port)
-		fmt.Fprintln(os.Stderr, "[debug] using sshkey: ", sshKey)
+		fmt.Fprintln(os.Stderr, "[debug] using ssh_key: ", sshKey)
 		fmt.Fprintln(os.Stderr, "[debug] ssh str:", sshString)
 
 		sshArgs := strings.Fields(sshString)
@@ -161,10 +161,10 @@ func sshResource(name string, keyID string) {
 
 	var statusurl string
 
-	sshKeyPath, _ := expand(*sshkey)
+	sshKeyPath, _ := expand(*ssh_key)
 
 	if !fileExists(sshKeyPath) {
-		fmt.Printf("no such SSHKEY env or --sshkey: %s\n", sshKeyPath)
+		fmt.Printf("no such SSHKEY env or --ssh_key: %s\n", sshKeyPath)
 		os.Exit(1)
 	}
 

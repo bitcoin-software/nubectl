@@ -72,37 +72,37 @@ func main() {
 	flag.Parse()
 
 	// keypath: get from args
-	if len(*cloudkey) > 1 {
-		keypath = *cloudkey
+	if len(*cloud_key) > 1 {
+		keypath = *cloud_key
 		//fmt.Println("hello world")
 	} else {
 		// keyppath: get from env(1)
-		keypath = os.Getenv("CLOUDKEY")
+		keypath = os.Getenv("CLOUD_KEY")
 	}
 
 	if !fileExists(keypath) {
-		fmt.Printf("no such CLOUDKEY env or --cloudkey: %s\n", keypath)
+		fmt.Printf("no such CLOUD_KEY env or --cloud_key: %s\n", keypath)
 		os.Exit(1)
 	}
 
 	// cloudUrl: get from args
-	if len(*cloudurl) > 1 {
-		cloudUrl = *cloudurl
+	if len(*cloud_url) > 1 {
+		cloudUrl = *cloud_url
 	} else {
 		// keyppath: get from env(1)
-		cloudUrl = os.Getenv("CLOUDURL")
+		cloudUrl = os.Getenv("CLOUD_URL")
 	}
 
 	// sshKey: get from args
-	if len(*sshkey) > 1 {
-		sshKey = *sshkey
+	if len(*ssh_key) > 1 {
+		sshKey = *ssh_key
 	} else {
 		// sshKey: get from env(1)
 		sshKey = os.Getenv("SSHKEY")
 	}
 
 	if len(cloudUrl) < 2 {
-		fmt.Printf("no such CLOUDURL env or --cloudurl\n")
+		fmt.Printf("no such CLOUD_URL env or --cloud_url\n")
 		os.Exit(1)
 	}
 
@@ -140,7 +140,7 @@ func main() {
 		divertConfig(apitoken)
 	} else if command == "ssh" {
 		if len(cloudUrl) < 2 {
-			fmt.Printf("no such SSHKEY env or --sshkey\n")
+			fmt.Printf("no such SSHKEY env or --ssh_key\n")
 			os.Exit(1)
 		}
 		if len(os.Args) == 3 {

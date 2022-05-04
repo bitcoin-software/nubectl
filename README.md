@@ -28,8 +28,8 @@ $ go install github.com/bitcoin-software/nubectl@latest
 via env(1):
 
 ```bash
-$ export CLOUDURL="https://your-cbsd-api.endpoint.com"
-$ export CLOUDKEY="/path/to/your/ssh/key.pub"
+$ export CLOUD_URL="https://your-cbsd-api.endpoint.com"
+$ export CLOUD_KEY="/path/to/your/ssh/key.pub"
 $ nubectl --help
 ```
 
@@ -42,7 +42,7 @@ $ nubectl -cloudurl=https://your-cbsd-api.endpoint.com -cloudkey=/path/to/your/s
 
 ### with [bitclouds](https://bitclouds.sh)
 ```bash
-$ export CLOUDKEY="/path/to/your/ssh/key.pub"
+$ export CLOUD_KEY="/path/to/your/ssh/key.pub"
 $ nubectl --help
 ```
 
@@ -51,7 +51,7 @@ $ nubectl --help
 Configure CLI
 
 ```bash
-$ export CLOUDKEY="/path/to/your/ssh/key.pub"
+$ export CLOUD_KEY="/path/to/your/ssh/key.pub"
 ```
 
 Create `config.yaml` file in `$PWD`. Refer to [example cloud config](dist.cloud.yaml)
