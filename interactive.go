@@ -85,7 +85,7 @@ func createVmDialogue(pubkey string, name string) {
 		return
 	}
 
-	// Start dynamic image list by CLOUDURL/images URL
+	// Start dynamic image list by CLOUD_URL/images URL
 	// get image list from cloudurl/images
 	var imageurl string
 	imageurl = cloudUrl + "/images"
@@ -121,7 +121,7 @@ func createVmDialogue(pubkey string, name string) {
 	if jsonErr != nil {
 		log.Fatal(jsonErr)
 	}
-	// End of Start dnynamic image list by  CLOUDURL/images URL
+	// End of Start dnynamic image list by  CLOUD_URL/images URL
 
 	prompt = promptui.Select{
 		Label: "Select VM image",

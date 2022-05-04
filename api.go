@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	cloudkey = flag.String("cloudkey", "", "Path to cloudkey ( or CLOUDKEY environment )")
-	cloudurl = flag.String("cloudurl", "", "Cloud URL ( or CLOUDURL environment )")
-	sshkey   = flag.String("sshkey", "~/.ssh/id_ed25519", "SSH keypath for ssh ( or SSHKEY environment )")
+	cloud_key = flag.String("cloud_key", "", "Path to CLOUD_KEY ( or CLOUD_KEY environment )")
+	cloud_url = flag.String("cloud_url", "", "Cloud URL ( or CLOUD_URL environment )")
+	ssh_key   = flag.String("ssh_key", "~/.ssh/id_ed25519", "SSH keypath for ssh ( or SSHKEY environment )")
 )
 
 var cloudUrl string
@@ -25,7 +25,7 @@ func createJail(disksize string, key string, name string) {
 	//fmt.Println("HTTP JSON POST URL:", httpposturl)
 
 	var jsonData = []byte(`{
-		"type": "jail",
+		"image": "jail",
 		"imgsize": "` + disksize + `",
 		"pubkey": "` + key + `"
 	}`)
@@ -54,12 +54,11 @@ func createVM(image string, cores int, ramsize string, disksize string, key stri
 	fmt.Println("HTTP JSON POST URL:", httpposturl)
 
 	var jsonData = []byte(`{
-	  "type": "bhyve",
-	  "imgsize": "` + disksize + `",
-	  "ram": "` + ramsize + `",
-	  "cpus": "` + strconv.Itoa(cores) + `",
-	  "img": "` + image + `",
-	  "pubkey": "` + key + `"
+		"imgsize": "` + disksize + `",
+		"ram": "` + ramsize + `",
+		"cpus": "` + strconv.Itoa(cores) + `",
+		"image": "` + image + `",
+		"pubkey": "` + key + `"
 	}`)
 
 	//fmt.Println(string(jsonData))
