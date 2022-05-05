@@ -36,8 +36,8 @@ $ nubectl --help
 via args:
 
 ```bash
-$ nubectl --cloudurl https://your-cbsd-api.endpoint.com --cloudkey /path/to/your/ssh/key.pub
-$ nubectl -cloudurl=https://your-cbsd-api.endpoint.com -cloudkey=/path/to/your/ssh/key.pub
+$ nubectl --cloud_url https://your-cbsd-api.endpoint.com --cloud_key /path/to/your/ssh/key.pub
+$ nubectl -cloud_url=https://your-cbsd-api.endpoint.com -cloud_key=/path/to/your/ssh/key.pub
 ```
 
 ### with [bitclouds](https://bitclouds.sh)
