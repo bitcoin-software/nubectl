@@ -1,0 +1,43 @@
+--- ssh.go-orig	2022-05-04 12:30:57.514022000 +0300
++++ ssh.go	2022-05-05 15:47:04.874173000 +0300
+@@ -10,7 +10,7 @@
+ 	"os"
+ 	"os/exec"
+ 	//not for win?
+-	"os/signal"
++	//"os/signal"
+ 	"os/user"
+ 	"path/filepath"
+ 	"strings"
+@@ -49,7 +49,7 @@
+ // pass SSH args to external ssh binary
+ func doSSH(sshKeyPath string, username string, hostname string, port int) {
+ 	var sshExternal bool
+-	sshExternal = true
++	sshExternal = false
+ 
+ 	if sshExternal {
+ 		sshString := fmt.Sprintf("ssh -i %s %s@%s -p%d", sshKeyPath, username, hostname, port)
+@@ -135,17 +135,17 @@
+ 		signal_chan := make(chan os.Signal, 1)
+ 
+ 		//not for win?
+-		signal.Notify(signal_chan, syscall.SIGWINCH)
++		//signal.Notify(signal_chan, syscall.SIGWINCH)
+ 
+ 		go func() {
+ 			for {
+ 				s := <-signal_chan
+ 				switch s {
+ 				//not for win
+-				case syscall.SIGWINCH:
+-					fd := int(os.Stdout.Fd())
+-					w, h, _ = terminal.GetSize(fd)
+-					session.WindowChange(h, w)
++				//case syscall.SIGWINCH:
++				//	fd := int(os.Stdout.Fd())
++				//	w, h, _ = terminal.GetSize(fd)
++				//	session.WindowChange(h, w)
+ 				}
+ 			}
+ 		}()
